@@ -6,7 +6,7 @@
 function createAdd() {
   let sum = 0;
 
-  function addRecursive(number) {
+  function adder(number) {
     if (typeof number === 'undefined') {
       const result = sum;
   
@@ -17,15 +17,14 @@ function createAdd() {
 
     sum += number;
 
-    return addRecursive;
+    return adder;
   };
 
-  return addRecursive;
+  return adder;
 }
 
 const add = createAdd();
 console.log(add(2)(5)(7)(1)(6)(5)(11)());
-
 
 // Задача 2. Напишіть функцію, яка бере два рядки і повертає true, якщо вони є анаграмами одне одного.
 
@@ -44,5 +43,20 @@ function checkForAnagram(line1, line2) {
   return filteredLine1 === filteredLine2;
 }
 
-
 console.log(checkForAnagram('che ater  s     ', 'hecta res '));
+
+// Задача 3. Напишіть функцію, яка глибоко клонує об'єкт, переданий їй параметром. 
+
+function deepClone(obj) {
+  const cloneObj = {};
+
+  for (const key in obj) {
+    if (typeof obj[key] === 'object') {
+      cloneObj[key] = deepClone(obj[key]);
+    } else {
+      cloneObj[key] = obj[key];
+    }
+  }
+
+  return cloneObj;
+}
