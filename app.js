@@ -60,3 +60,47 @@ function deepClone(obj) {
 
   return cloneObj;
 }
+
+// Задача 4. Напишіть функцію-обгортку, яка кешуватиме результат будь-якої іншої функції з довільною кількістю числових параметрів. Приклад (псевдокод):
+// const calc = (a, b, c) => a+b+c;
+// const wrapper = (args) => {
+//         // код вашої функції
+// };
+// const cachedCalc = wrapper(add);
+// cachedCalc(2,2,3); // 7 calculated
+// cachedCalc(5,8,1); // 14 calculated
+// cachedCalc(2,2,3); // 7 from cache
+
+const calc = (...args) => args.reduce((a, b) => a + b, 0);
+
+function hash(args) {
+  return [].join.call(args);
+}
+
+function wrapper (func, hash) {
+  let cache = new Map();
+
+  return function(){
+    let key = hash(arguments);
+
+    if (cache.has(key)) {
+      console.log(`Restored from cache with key ${key}`);
+      return cache.get(key);
+    }
+
+    let result = func.call(this, ...arguments);
+
+    cache.set(key, result);
+    return result;
+  };
+};
+
+const cachedCalc = wrapper(calc, hash);
+
+console.log(cachedCalc(2, 2, 3));
+console.log(cachedCalc(5, 8, 1));
+console.log(cachedCalc(2, 2, 3));
+
+
+
+
