@@ -27,7 +27,7 @@ console.log(addFunction(2)(5)(7)(1)(6)(5)(11)());
 
 // Задача 2. Напишіть функцію, яка бере два рядки і повертає true, якщо вони є анаграмами одне одного.
 
-function checkForxagram(line1: string, line2: string) {
+function checkForAnagram(line1: string, line2: string) {
   if (!line1 || !line2) {
     throw new Error('Strings length must be greater than 0');
   }
