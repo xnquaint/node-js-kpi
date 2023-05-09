@@ -60,7 +60,7 @@ function deepClone<T extends object>(obj: T): T {
   for (const key in obj) {
     const value = obj[key as keyof T];
 
-    if (value instanceof Object) {
+    if (value && typeof value === 'object') {
       cloneObj[key as keyof T] = deepClone(value) as T[keyof T];
     } else {
       cloneObj[key as keyof T] = value;
@@ -69,6 +69,7 @@ function deepClone<T extends object>(obj: T): T {
 
   return cloneObj;
 }
+
 
 const pers1: IPerson = {
   'name': 'Sasha',
