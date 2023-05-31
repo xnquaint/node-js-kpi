@@ -73,7 +73,7 @@ import undici from "undici";
 const filename: string = process.argv.slice(2)[0];
 
 if (!filename) {
-  console.error("Please provide a JSON file name as a command-line argument.");
+  console.error("Please provide a JSON file name.");
   process.exit(1);
 }
 
