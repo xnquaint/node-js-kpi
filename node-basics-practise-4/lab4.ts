@@ -14,27 +14,30 @@
 // results type = Array<{item: string, index: number}>
 
 async function runSequent<T, RES>(arr: Array<T>, callback: (item: T, index: number) => Promise<RES>) {
-    let result: Awaited<RES>[] = [];
-    for (let i = 0; i < arr.length; i++) {
-        let item = await callback(arr[i], i);
-        result.push(item);
-    }
-    return result;
-};
+  const result: Awaited<RES>[] = [];
+
+  for await (const [index, item] of arr.entries()) {
+    const temp = await callback(item, index);
+    result.push(temp);
+  }
+
+  return result;
+}
 
 async function foo() {
   const array: Array<string> = ["one", "two", "three"];
-  const results = await runSequent(array, (item, index) =>
-      Promise.resolve({
-          item,
-          index,
-      })
-  );
+  const results = await runSequent(array, async (item, index) => {
+    return {
+      item,
+      index,
+    };
+  });
 
   console.log(results);
 }
 
 foo();
+
 
 // 2. Напишіть функцію, яка приймає будь-який тип масиву та правило для видалення елементів масиву. Функція змінює переданий масив, а усі видалені елементи функція повертає окремим масивом такого ж типу. Усі типи мають застосовуватися автоматично (функція шаблону). Приклад виклику:
 // const array = [1, 2, 3, 6, 7, 9];
@@ -63,27 +66,45 @@ console.log(deletedElements);
 
 // 3. Напишіть скрипт, який отримує з командного рядка рядковий параметр - шлях до JSON-файла із масивом рядків - посилань, читає та аналізує його вміст. Скрипт має створити папку «<JSON_filename>_pages» і для кожного посилання із <JSON-файла отримати його HTML-вміст і зберегти цей вміст у окремому файлі в новоствореній папці. Приклад JSON-файла (list.json) прикріплений до цього практичного завдання нижче.
 
-import {AxiosResponse} from "axios";
-const fs = require('fs');
-const path = require('path');
-const axios = require('axios');
+import { promises as fsPromises } from "node:fs";
+import { join, basename } from "node:path";
+import undici from "undici";
 
 const filename: string = process.argv.slice(2)[0];
-const pagesDirname: string = path.basename(filename, '.json') + '_pages';
-fs.mkdirSync(pagesDirname, {recursive: true});
 
-const urls: string[] = require(`./${filename}`);
-Promise.all(urls.map((url: string) => axios.get(url)))
-    .then((responses: Array<AxiosResponse<string>>) => {
-        responses.forEach((response: AxiosResponse<string>, index: number) => {
-            const url: string = response.config.url!;
-            const html: string = response.data;
-            const pageFilename: string = path.join(pagesDirname, `page_${index + 1}.html`);
-            fs.writeFileSync(pageFilename, html);
-            console.log(`Saved ${url} to ${pageFilename}`);
-        });
-    })
-    .catch((error: Error) => console.error(error));
+if (!filename) {
+  console.error("Please provide a JSON file name as a command-line argument.");
+  process.exit(1);
+}
+
+(async () => {
+  try {
+    const pagesDirname: string = `${basename(filename, ".json")}_pages`;
+    await fsPromises.mkdir(pagesDirname, { recursive: true });
+
+    const urls: string[] = require(`./${filename}`);
+    await Promise.all(
+      urls.map(async (url: string, index: number) => {
+        const { body } = await undici.request(url);
+        const html: string = await readStreamToString(body);
+        const pageFilename: string = join(pagesDirname, `page_${index + 1}.html`);
+        await fsPromises.writeFile(pageFilename, html);
+        console.log(`Saved ${url} to ${pageFilename}`);
+      })
+    );
+  } catch (error: any) {
+    console.error("An error occurred:", error);
+  }
+})();
+
+async function readStreamToString(stream: NodeJS.ReadableStream): Promise<string> {
+  let data: string = "";
+  for await (const chunk of stream) {
+    data += chunk;
+  }
+  return data;
+}
+
 
 // 4. Напишіть скрипт, який отримує з командного рядка числовий параметр – частоту в секундах. Скрипт має виводити на кожному тику (визначеному частотою) наступну системну інформацію:
 
