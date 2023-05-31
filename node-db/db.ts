@@ -1,6 +1,6 @@
-const http = require('http');
-const { Client } = require('pg');
-const { data } = require('./clientdata');
+import http from 'http';
+import { Client } from 'pg';
+import { data } from './clientdata';
 
 const client = new Client({
   host: process.env.DB_HOST || data.host,
